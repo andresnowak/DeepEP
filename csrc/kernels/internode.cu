@@ -259,13 +259,13 @@ notify_dispatch(const int* num_tokens_per_rank, int* moe_recv_counter_mapped, in
             // Iterate over tokens
             int total_count = 0, per_nvl_rank_count[NUM_MAX_NVL_PEERS] = {0};
             for (int64_t i = token_start_idx + lane_id; i < token_end_idx; i += 32) {
-                EP_STATIC_ASSERT(NUM_MAX_NVL_PEERS * sizeof(bool) == sizeof(uint64_t), "Invalid number of NVL peers");
-                auto is_token_in_rank_uint64 = *reinterpret_cast<const uint64_t*>(is_token_in_rank + i * num_ranks + dst_rdma_rank * NUM_MAX_NVL_PEERS);
-                auto is_token_in_rank_values = reinterpret_cast<const bool*>(&is_token_in_rank_uint64);
+                EP_STATIC_ASSERT(NUM_MAX_NVL_PEERS * sizeof(bool) == sizeof(uint32_t), "Invalid number of NVL peers");
+                auto is_token_in_rank_uint32 = *reinterpret_cast<const uint32_t*>(is_token_in_rank + i * num_ranks + dst_rdma_rank * NUM_MAX_NVL_PEERS);
+                auto is_token_in_rank_values = reinterpret_cast<const bool*>(&is_token_in_rank_uint32);
                 #pragma unroll
                 for (int j = 0; j < NUM_MAX_NVL_PEERS; ++ j)
                     per_nvl_rank_count[j] += is_token_in_rank_values[j];
-                total_count += (is_token_in_rank_uint64 != 0);
+                total_count += (is_token_in_rank_uint32 != 0);
             }
 
             // Warp reduce
@@ -408,7 +408,7 @@ dispatch(int4* recv_x, float* recv_x_scales, int64_t* recv_topk_idx, float* recv
     EP_DEVICE_ASSERT(num_topk <= 32);
 
     // RDMA symmetric layout
-    EP_STATIC_ASSERT(NUM_MAX_NVL_PEERS * sizeof(bool) == sizeof(uint64_t), "Invalid number of NVL peers");
+    EP_STATIC_ASSERT(NUM_MAX_NVL_PEERS * sizeof(bool) == sizeof(uint32_t), "Invalid number of NVL peers");
     auto hidden_bytes = hidden_int4 * sizeof(int4);
     auto scale_bytes = num_scales * sizeof(float);
     auto num_bytes_per_token = get_num_bytes_per_token(hidden_int4, num_scales, num_topk, num_topk);
