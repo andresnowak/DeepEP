@@ -17,7 +17,7 @@ extern nvshmem_team_t cpu_rdma_team;
 struct SourceMeta {
     int src_rdma_rank, is_token_in_nvl_rank_bits;
 
-    EP_STATIC_ASSERT(NUM_MAX_NVL_PEERS == 8, "Invalid number of maximum NVL peers");
+    EP_STATIC_ASSERT(NUM_MAX_NVL_PEERS == 4, "Invalid number of maximum NVL peers");
 
     __forceinline__ SourceMeta() = default;
 
