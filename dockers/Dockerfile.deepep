@@ -92,9 +92,6 @@ RUN if [ "$USE_LOCAL_DEEPEP" = "true" ]; then \
         rm -rf /tmp/deepep-local; \
     fi
 
-ENV LD_LIBRARY_PATH=$NVSHMEM_HOME/lib:$LD_LIBRARY_PATH
-ENV PATH=$NVSHMEM_HOME/bin:$PATH
-
 
 # =========================
 # Build DeepEP
@@ -113,6 +110,9 @@ RUN NVSHMEM_DIR=/home/dpsk_a2a/deepep-nvshmem/install python setup.py develop &&
 # =========================
 
 ENV NVSHMEM_HOME=/home/dpsk_a2a/deepep-nvshmem/install
+
+ENV LD_LIBRARY_PATH=$NVSHMEM_HOME/lib:$LD_LIBRARY_PATH
+ENV PATH=$NVSHMEM_HOME/bin:$PATH
 
 RUN pip install \
     $NVSHMEM_HOME/lib/python/dist/nvshmem4py_cu12-*-manylinux*.whl
