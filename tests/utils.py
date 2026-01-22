@@ -13,17 +13,17 @@ from typing import Optional, Union
 
 def init_dist(local_rank: int, num_local_ranks: int):
     # NOTES: you may rewrite this function with your own cluster settings
-    ip = os.getenv('MASTER_ADDR', '127.0.0.1')
-    port = int(os.getenv('MASTER_PORT', '8361'))
-    num_nodes = int(os.getenv('WORLD_SIZE', 1))
-    node_rank = int(os.getenv('RANK', 0))
+    node_rank = int(os.getenv('NODE_RANK', 0))
+    world_size = int(os.getenv('WORLD_SIZE', num_local_ranks))
+
+    rank = node_rank * num_local_ranks + local_rank
 
     sig = inspect.signature(dist.init_process_group)
     params = {
         'backend': 'nccl',
-        'init_method': f'tcp://{ip}:{port}',
-        'world_size': num_nodes * num_local_ranks,
-        'rank': node_rank * num_local_ranks + local_rank,
+        'init_method': 'env://',
+        'world_size': world_size,
+        'rank': rank,
     }
     if 'device_id' in sig.parameters:
         # noinspection PyTypeChecker
@@ -33,7 +33,7 @@ def init_dist(local_rank: int, num_local_ranks: int):
     torch.set_default_device('cuda')
     torch.cuda.set_device(local_rank)
 
-    return dist.get_rank(), dist.get_world_size(), dist.new_group(list(range(num_local_ranks * num_nodes)))
+    return dist.get_rank(), dist.get_world_size(), dist.new_group(list(range(world_size)))
 
 
 def calc_diff(x: torch.Tensor, y: torch.Tensor):

@@ -242,7 +242,7 @@ def test_main(args: argparse.Namespace, num_sms: int,
 
 # noinspection PyUnboundLocalVariable,PyShadowingNames
 def test_loop(local_rank: int, num_local_ranks: int, args: argparse.Namespace):
-    num_nodes = int(os.getenv('WORLD_SIZE', 1))
+    num_nodes = int(os.getenv('NUM_NODES', 1))
     rank, num_ranks, group = init_dist(local_rank, num_local_ranks)
     if args.test_ll_compatibility:
         ll_num_tokens, ll_hidden, ll_num_experts, ll_num_topk = 16, 5120, 256, 9
@@ -312,7 +312,7 @@ if __name__ == '__main__':
 
     # Set default `num_topk_groups` if not provided
     if args.num_topk_groups is None:
-        num_nodes = int(os.getenv('WORLD_SIZE', 1))
+        num_nodes = int(os.getenv('NUM_NODES', 1))
         args.num_topk_groups = min(num_nodes, 4)
 
     num_processes = args.num_processes
