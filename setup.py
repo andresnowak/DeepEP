@@ -2,9 +2,27 @@ import os
 import subprocess
 import setuptools
 import importlib
+import shutil
 
 from pathlib import Path
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+
+
+# Custom BuildExtension that copies .so files to source dir for editable installs
+class CustomBuildExtension(BuildExtension):
+    def run(self):
+        super().run()
+        # Copy the built extension to the source directory for editable installs
+        if self.inplace:
+            return  # Already built in place
+
+        # Find the built .so file
+        build_lib = Path(self.build_lib)
+        for so_file in build_lib.glob("deep_ep_cpp*.so"):
+            # Copy to project root so it's importable in editable mode
+            dest = Path(__file__).parent / so_file.name
+            shutil.copy2(so_file, dest)
+            print(f"Copied {so_file} to {dest} for editable install")
 
 
 # Wheel specific: the wheels only include the soname of the host library `libnvshmem_host.so.X`
